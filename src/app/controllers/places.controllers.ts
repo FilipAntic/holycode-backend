@@ -1,7 +1,7 @@
 import {Request, Response} from 'express'
 import {getPlaceByIdFromApi, getPlacesFromApi} from "../services/places.services";
 import {ApiPlaces} from "../models/places";
-import {entries, groupBy, lowerCase, values} from 'lodash';
+import {entries, get, groupBy, lowerCase, set, values} from 'lodash';
 export const getPlace = async (req: Request<{ id: string }>, res: Response) => {
     const placeId = req.params.id;
     try {
@@ -36,9 +36,16 @@ const transformData = (place: ApiPlaces, long?: boolean) => ({
     ...(long ? {openingHours: groupOpeningHours(place.opening_hours)} : {})
 })
 
-const groupOpeningHours = (data: any) => {
-    const openingHours = data.days;
-
+export const groupOpeningHours = (data: any) => {
+    const openingHours = dayOfTheWeek.reduce((prev, curr)=> {
+        const currentVal = get(data.days,curr)
+        if(currentVal){
+            set(prev, curr, currentVal);
+        } else {
+            set(prev, curr, [{type: "CLOSED"}]);
+        }
+        return prev;
+    }, {});
     // Group days with same opening hours
     const groupedHours = values(groupBy(entries(openingHours), ([, hours]) => JSON.stringify(hours)));
     // Format the grouped data
@@ -58,3 +65,10 @@ const groupOpeningHours = (data: any) => {
 
     return formatted.days;
 }
+
+const dayOfTheWeek = ["monday","tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday"];

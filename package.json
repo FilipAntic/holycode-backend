@@ -1,7 +1,7 @@
 {
   "scripts": {
     "test": "jest",
-    "start": "npx nodemon src/app/app.ts"
+    "start": "npx tsc && node dist/app/app.js"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
